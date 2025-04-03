@@ -1,9 +1,9 @@
-name: Go CI on development branch push
+name: CI on main branch push
 
 on:
   push:
     branches:
-      - development
+      - main
 
 jobs:
   build:
