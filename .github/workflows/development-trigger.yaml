@@ -1,0 +1,53 @@
+name: Go CI on development branch push
+
+on:
+  push:
+    branches:
+      - development
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and Save Docker Image
+        run: |
+          IMAGE_NAME="${{ github.event.repository.name }}_docker_image"
+          docker build -t $IMAGE_NAME .
+          docker save $IMAGE_NAME | gzip > $IMAGE_NAME.tar.gz
+
+      - name: Set up SSH Key and Known Hosts
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa  # ✅ Fix SSH key permissions
+          ssh-keyscan -p ${{secrets.SSH_PORT}} -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+
+      - name: Test SSH Connection
+        run: ssh -p ${{secrets.SSH_PORT}} -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "echo SSH Connection Successful"
+
+      - name: Transfer Docker Image via Rsync (Port ${{secrets.SSH_PORT}}, Pubkey)
+        run: |
+          rsync -avz -e "ssh -p ${{secrets.SSH_PORT}} -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
+          ./${{ github.event.repository.name }}_docker_image.tar.gz \
+          ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/
+
+      - name: Load Docker Image on Server
+        run: |
+          ssh -p ${{secrets.SSH_PORT}} -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no \
+          ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+          docker load -i /home/${{ secrets.SSH_USER }}/${{ github.event.repository.name }}_docker_image.tar.gz 
+
+      - name: Run Docker Container on Server
+        run: |
+          ssh -p ${{secrets.SSH_PORT}} -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no \
+          ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+          ./reload_web_container.sh ${{ github.event.repository.name }} ${{vars.EPORTS}}:${{vars.IPORTS}}
