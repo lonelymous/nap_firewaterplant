@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Play the Fire-Water-Plant game! Choose your element and see if you can defeat the computer.">
+    <meta name="keywords" content="Fire-Water-Plant game, fire, water, plant, game, fun game, interactive game">
+    <meta name="author" content="lonelymous">
+    
+    <meta property="og:title" content="Fire-Water-Plant Game">
+    <meta property="og:description" content="Play Fire-Water-Plant! Choose Fire, Water, or Plant and face off against the computer in this fun and interactive game.">
+    <meta property="og:image" content="fwp.png"> <!-- Add a link to an image you want to use as the preview -->
+    <meta property="og:url" content="https://systicore.hu/fire-water-plant">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#1F2937"> <!-- Dark mode theme color for mobile browsers -->
+    
+    <link rel="icon" href="fwp.png" type="image/x-icon"> <!-- Favicon for the website -->
+    <link rel="apple-touch-icon" href="fwp.png"> <!-- Apple touch icon for iOS devices -->
+    <title>Fire-Water-Plant Game</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .button:hover {
+            transform: scale(1.1);
+            transition: transform 0.2s ease-in-out;
+        }
+        .selected {
+            border: 4px solid yellow;
+            transition: border 0.3s ease-in-out;
+        }
+        .fade-border {
+            animation: fadeBorder 1.5s ease-out forwards;
+        }
+        @keyframes fadeBorder {
+            from { border-color: yellow; }
+            to { border-color: transparent; }
+        }
+        .fade-in {
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .computer-choice {
+            font-size: 2rem;
+            animation: bounce 0.5s ease-in-out;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .result-animate {
+            animation: pulse 0.5s ease-in-out;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex flex-col items-center justify-center h-screen">
+    <h1 class="text-3xl font-bold mb-6 fade-in">🔥 Fire - Water - Plant 🌊</h1>
+    <div class="flex space-x-4">
+        <button id="fire" onclick="play('fire')" class="p-4 bg-red-500 rounded-xl button">🔥 Fire</button>
+        <button id="water" onclick="play('water')" class="p-4 bg-blue-500 rounded-xl button">🌊 Water</button>
+        <button id="plant" onclick="play('plant')" class="p-4 bg-green-500 rounded-xl button">🌱 Plant</button>
+    </div>
+    <p id="result" class="mt-6 text-xl fade-in"></p>
+    <p id="computer-choice" class="mt-4 text-3xl"></p>
+    <div class="mt-6 text-lg">
+        <p>Wins: <span id="wins">0</span></p>
+        <p>Losses: <span id="losses">0</span></p>
+        <p>Ties: <span id="ties">0</span></p>
+    </div>
+    <button onclick="resetGame()" class="mt-6 px-4 py-2 bg-gray-700 rounded-xl hover:bg-gray-600">New Game</button>
+    <script>
+        const choices = ['fire', 'water', 'plant'];
+        const outcomes = {
+            fire: 'plant',
+            water: 'fire',
+            plant: 'water'
+        };
+        let wins = 0, losses = 0, ties = 0;
+
+        function play(userChoice) {
+            const computerChoice = choices[Math.floor(Math.random() * 3)];
+            let resultText = `You chose ${userChoice} - Computer chose ${computerChoice}. `;
+            
+            document.getElementById('computer-choice').innerText = `🤖 ${computerChoice.toUpperCase()}!`;
+            document.getElementById('computer-choice').classList.add('computer-choice');
+            setTimeout(() => {
+                document.getElementById('computer-choice').classList.remove('computer-choice');
+            }, 1000);
+            
+            document.querySelectorAll('.selected').forEach(el => el.classList.remove('selected', 'fade-border'));
+            const selectedButton = document.getElementById(userChoice);
+            selectedButton.classList.add('selected', 'fade-border');
+            setTimeout(() => {
+                selectedButton.classList.remove('selected', 'fade-border');
+            }, 1500);
+            
+            const resultElement = document.getElementById('result');
+            if (userChoice === computerChoice) {
+                resultText += "It's a tie!";
+                ties++;
+                document.getElementById('ties').innerText = ties;
+                resultElement.style.color = 'yellow';
+            } else if (outcomes[userChoice] === computerChoice) {
+                resultText += "You win!";
+                wins++;
+                document.getElementById('wins').innerText = wins;
+                resultElement.style.color = 'green';
+            } else {
+                resultText += "You lose!";
+                losses++;
+                document.getElementById('losses').innerText = losses;
+                resultElement.style.color = 'red';
+            }
+            
+            resultElement.classList.remove('fade-in');
+            void resultElement.offsetWidth; // Trigger reflow
+            resultElement.classList.add('fade-in');
+            resultElement.innerText = resultText;
+        }
+
+        function resetGame() {
+            wins = 0;
+            losses = 0;
+            ties = 0;
+            document.getElementById('wins').innerText = wins;
+            document.getElementById('losses').innerText = losses;
+            document.getElementById('ties').innerText = ties;
+            document.getElementById('result').innerText = '';
+            document.getElementById('computer-choice').innerText = '';
+        }
+    </script>
+</body>
+</html>
