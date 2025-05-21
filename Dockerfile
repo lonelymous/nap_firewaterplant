@@ -2,7 +2,7 @@
 FROM nginx:alpine
 
 # Állítsuk be az Nginx konfigurációt a kívánt portra
-EXPOSE 7180
+EXPOSE 80
 
 # Másoljuk át a weboldal fájlokat a konténerbe
 COPY . /usr/share/nginx/html
