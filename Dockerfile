@@ -8,7 +8,7 @@ EXPOSE 7180
 COPY . /usr/share/nginx/html
 
 # Másoljuk át az egyedi Nginx konfigurációs fájlt (ha szükséges)
-COPY nginx.conf /etc/nginx/nginx.conf
+COPY default.conf /etc/nginx/conf.d/default.conf
 
 # Indítjuk az Nginx szolgáltatást a kívánt porton
 CMD ["nginx", "-g", "daemon off;"]
