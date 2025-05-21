@@ -27,6 +27,7 @@ The game logic is handled with basic JavaScript, and the UI is styled using **Ta
 - **Tailwind CSS** — utility-first styling
 - **JavaScript** — game logic and interactions
 - **Nginx** — lightweight web server for deployment
+- **Docker** — container orchestration
 
 ## 📦 Setup & Deployment
 
